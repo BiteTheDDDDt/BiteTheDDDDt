@@ -23,7 +23,12 @@ jobs:
           plugin_habits_facts: yes      # Display facts section
           plugin_habits_charts: yes     # Display charts section
           plugin_habits_trim: yes       # Trim unused hours on daily chart
-          config_timezone: Asia/Shanghai# Set timezone
+          config_timezone: Asia/Shanghai # Set timezone
+          
+          plugin_wakatime: yes
+          plugin_wakatime_token: ${{ secrets.WAKATIME }}
+          plugin_wakatime_days: 7
+          plugin_wakatime_sections: time, projects, projects-graphs, languages, languages-graphs, editors, editors-graphs, os, os-graphs
           
           plugin_achievements: yes
           plugin_achievements_threshold: B       # Display achievements with rank B or higher
