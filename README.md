@@ -1,4 +1,4 @@
-![Metrics](https://github.com/my-github-user/my-github-user/blob/main/github-metrics.svg)
+![Metrics](https://github.com/my-github-user/BiteTheDDDDt/blob/main/github-metrics.svg)
 
 [Codeforces](https://codeforces.com/profile/bitetheddddt)
 
