@@ -1,4 +1,4 @@
-<img src="https://github.com/BiteTheDDDDt/BiteTheDDDDt/blob/master/github-metrics.svg" alt="Metrics" width="100%">
+![Metrics](https://github.com/BiteTheDDDDt/BiteTheDDDDt/blob/main/github-metrics.svg)
 
 [Codeforces](https://codeforces.com/profile/bitetheddddt)
 
