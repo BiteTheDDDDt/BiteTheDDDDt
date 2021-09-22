@@ -26,7 +26,7 @@ jobs:
           config_timezone: Asia/Shanghai # Set timezone
           
           plugin_wakatime: yes
-          plugin_wakatime_token: ${{ secrets.WAKATIME }}
+          plugin_wakatime_token: ${{ secrets.WAKETIME }}
           plugin_wakatime_days: 7
           plugin_wakatime_sections: time, projects, projects-graphs, languages, languages-graphs, editors, editors-graphs, os, os-graphs
           
