@@ -16,16 +16,8 @@ jobs:
           token: ${{ secrets.token }}
           config_timezone: Asia/Shanghai
           
-          plugin_habits: yes
-          plugin_habits_from: 200       # Use 200 events to compute habits
-          plugin_habits_days: 3650      # Keep only events from last 14 days
-          plugin_habits_facts: yes      # Display facts section
-          plugin_habits_charts: yes     # Display charts section
-          plugin_habits_trim: yes       # Trim unused hours on daily chart
-          
           plugin_wakatime: yes
           plugin_wakatime_token: ${{ secrets.WAKETIME }}
-          plugin_wakatime_days: 7
           plugin_wakatime_sections: time, projects, projects-graphs, languages, languages-graphs, editors, editors-graphs, os, os-graphs
           
           plugin_achievements: yes
