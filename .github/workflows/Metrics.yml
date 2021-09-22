@@ -12,10 +12,9 @@ jobs:
       # See action.yml for all options
       - uses: lowlighter/metrics@latest
         with:
-          # Your GitHub token
+          base: header, activity, metadata
           token: ${{ secrets.token }}
-          plugin_isocalendar: yes
-          plugin_isocalendar_duration: full-year # Display full year instead of half year
+          config_timezone: Asia/Shanghai
           
           plugin_habits: yes
           plugin_habits_from: 200       # Use 200 events to compute habits
@@ -23,7 +22,6 @@ jobs:
           plugin_habits_facts: yes      # Display facts section
           plugin_habits_charts: yes     # Display charts section
           plugin_habits_trim: yes       # Trim unused hours on daily chart
-          config_timezone: Asia/Shanghai # Set timezone
           
           plugin_wakatime: yes
           plugin_wakatime_token: ${{ secrets.WAKETIME }}
