@@ -23,3 +23,6 @@ jobs:
     
           plugin_notable: yes
           plugin_notable_repositories: yes
+          plugin_notable_indepth: yes
+          
+          plugin_code: yes
