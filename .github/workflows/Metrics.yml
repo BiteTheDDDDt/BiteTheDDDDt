@@ -18,7 +18,7 @@ jobs:
           
           plugin_wakatime: yes
           plugin_wakatime_token: ${{ secrets.WAKETIME }}
-          plugin_wakatime_sections: time, projects, projects-graphs, languages, languages-graphs, editors, editors-graphs, os, os-graphs
+          plugin_wakatime_sections: time, projects-graphs, languages-graphs, editors-graphs, os-graphs
           plugin_wakatime_limit: 0
     
           plugin_notable: yes
