@@ -26,3 +26,4 @@ jobs:
           plugin_notable_indepth: yes
           
           plugin_code: yes
+          plugin_code_lines: 120
