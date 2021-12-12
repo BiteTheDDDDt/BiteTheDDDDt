@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="480" height="1424" class="">
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="2236" class="">
     <defs>
         <style/>
     </defs>
@@ -1762,17 +1762,17 @@
             </div>
                         <div class="field">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M10.5 7.75a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zm1.43.75a4.002 4.002 0 01-7.86 0H.75a.75.75 0 110-1.5h3.32a4.001 4.001 0 017.86 0h3.32a.75.75 0 110 1.5h-3.32z"/></svg>
-              fix
+              clone
             </div>
                         <div class="field">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
                                 <path fill-rule="evenodd" d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm6.5-.25A.75.75 0 017.25 7h1a.75.75 0 01.75.75v2.75h.25a.75.75 0 010 1.5h-2a.75.75 0 010-1.5h.25v-2h-.25a.75.75 0 01-.75-.75zM8 6a1 1 0 100-2 1 1 0 000 2z"/>
                             </svg>
-                            <span class="code">4060c0b7</span>
-                            <span class="code">be/src/vec/columns/column.h</span>
+                            <span class="code">ee04d949</span>
+                            <span class="code">be/src/vec/olap/block_reader.cpp</span>
                             <span class="code">
-                                <span class="snippet additions">++0</span>
-                                <span class="snippet deletions">--10</span>
+                                <span class="snippet additions">++13</span>
+                                <span class="snippet deletions">--38</span>
                             </span>
                         </div>
                     </section>
@@ -1780,38 +1780,90 @@
                 <div class="row">
                     <section class="snippet">
                         <div class="body markdown">
-                            <code class="language-diff" xml:space="preserve"><span class="token coord">@@ -149,11 +149,6 @@</span>
-class IColumn : public COW&lt;IColumn&gt; {
-<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   /// Is used in merge-sort and merges. It could be implemented in inherited classes more optimally than default implementation.
-</span><span class="token prefix unchanged"> </span><span class="token line">   virtual void insert_from(const IColumn&amp; src, size_t n);
+                            <code class="language-diff" xml:space="preserve"><span class="token coord">@@ -81,6 +81,9 @@</span>
+OLAPStatus BlockReader::_init_collect_iter(const ReaderParams&amp; read_params,
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       _eof = status == OLAP_ERR_DATA_EOF;
 </span></span>
-<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">   /// Appends like `insert_from`.
-</span><span class="token prefix deleted">-</span><span class="token line">   /// But support unnullable column insert from nullable column, vice versa.
-</span><span class="token prefix deleted">-</span><span class="token line">   /// And iff src is nullptr, it will insert default element.
-</span><span class="token prefix deleted">-</span><span class="token line">   virtual void insert_from_adapted(COW&lt;IColumn&gt;::immutable_ptr&lt;IColumn&gt; src, size_t n);
-</span><span class="token prefix deleted">-</span><span class="token line">
-</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   /// Appends range of elements from other column with the same type.
-</span><span class="token prefix unchanged"> </span><span class="token line">   /// Could be used to concatenate columns.
-</span><span class="token prefix unchanged"> </span><span class="token line">   virtual void insert_range_from(const IColumn&amp; src, size_t start, size_t length) = 0;
-</span></span>@@ -236,11 +231,6 @@ class IColumn : public COW&lt;IColumn&gt; {
-<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   virtual int compare_at(size_t n, size_t m, const IColumn&amp; rhs,
-</span><span class="token prefix unchanged"> </span><span class="token line">                          int nan_direction_hint) const = 0;
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       if (!_eof &amp;&amp; is_agg) {
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">           _stored_data_block = _next_row.block-&gt;create_same_struct_block(_batch_size);
+</span><span class="token prefix inserted">+</span><span class="token line">           _stored_data_columns = _stored_data_block-&gt;mutate_columns();
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">           for (auto idx : _agg_columns_idx) {
+</span><span class="token prefix unchanged"> </span><span class="token line">               FieldAggregationMethod agg_method =
+</span><span class="token prefix unchanged"> </span><span class="token line">                       tablet()-&gt;tablet_schema().column(idx).aggregation();
+</span></span>@@ -286,55 +289,27 @@ void BlockReader::_insert_data(doris::vectorized::MutableColumns&amp; columns, bool
+}
+
+void BlockReader::_append_agg_data() {
+<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">   _stored_row_ref.emplace_back(_next_row);
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">   for (auto idx : _agg_columns_idx) {
+</span><span class="token prefix inserted">+</span><span class="token line">       _stored_data_columns[idx]-&gt;replace_column_data(
+</span><span class="token prefix inserted">+</span><span class="token line">               *(_next_row.block)-&gt;get_by_position(idx).column, _next_row.row_pos, _agg_data_num);
+</span><span class="token prefix inserted">+</span><span class="token line">   }
+</span><span class="token prefix inserted">+</span><span class="token line">   _agg_data_num++;
 </span></span>
-<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">   /// get compare result like `compare_at`.
-</span><span class="token prefix deleted">-</span><span class="token line">   /// But support unnullable column compare with nullable column, vice versa.
-</span><span class="token prefix deleted">-</span><span class="token line">   virtual int compare_at_adapted(size_t n, size_t m, const IColumn&amp; rhs,
-</span><span class="token prefix deleted">-</span><span class="token line">                                  int nan_direction_hint) const;
+<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">   bool is_last = _next_row.block-&gt;rows() == _next_row.row_pos + 1;
+</span><span class="token prefix deleted">-</span><span class="token line">   // execute aggregate when have `batch_size` column or some ref invalid soon
+</span><span class="token prefix deleted">-</span><span class="token line">   if (_stored_row_ref.size() == _batch_size || is_last) {
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">   if (_stored_data_block-&gt;rows() == _batch_size) {
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       _update_agg_value();
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">       if (is_last) {
+</span><span class="token prefix deleted">-</span><span class="token line">           // some block update data, should calculate 'has_null' again
+</span><span class="token prefix deleted">-</span><span class="token line">           for (int i = 0; i &lt; _agg_columns_idx.size(); i++) {
+</span><span class="token prefix deleted">-</span><span class="token line">               AggregateFunctionPtr function = _agg_functions[i];
+</span><span class="token prefix deleted">-</span><span class="token line">               function-&gt;erase_has_null(
+</span><span class="token prefix deleted">-</span><span class="token line">                       _next_row.block-&gt;get_by_position(_agg_columns_idx[i]).column_raw);
+</span><span class="token prefix deleted">-</span><span class="token line">           }
+</span><span class="token prefix deleted">-</span><span class="token line">       }
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   }
+</span></span>}
+
+void BlockReader::_update_agg_value() {
+<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">   if (!_stored_row_ref.size()) {
+</span><span class="token prefix deleted">-</span><span class="token line">       return;
+</span><span class="token prefix deleted">-</span><span class="token line">   }
 </span><span class="token prefix deleted">-</span><span class="token line">
-</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   /** Returns a permutation that sorts elements of this column,
-</span><span class="token prefix unchanged"> </span><span class="token line">     *  i.e. perm[i]-th element of source column should be i-th element of sorted column.
-</span><span class="token prefix unchanged"> </span><span class="token line">     * reverse - reverse ordering (acsending).</span></span></code>
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   for (int i = 0; i &lt; _agg_columns_idx.size(); i++) {
+</span><span class="token prefix unchanged"> </span><span class="token line">       AggregateFunctionPtr function = _agg_functions[i];
+</span><span class="token prefix unchanged"> </span><span class="token line">       AggregateDataPtr place = _agg_places[i];
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">       auto column_ptr = _stored_data_columns[_agg_columns_idx[i]].get();
+</span></span>
+<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">       int begin = 0;
+</span><span class="token prefix deleted">-</span><span class="token line">       int end = 1;
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">       // execute aggregate for continuous row at same block
+</span><span class="token prefix deleted">-</span><span class="token line">       auto add_batch = [&amp;]() {
+</span><span class="token prefix deleted">-</span><span class="token line">           auto column_ptr =
+</span><span class="token prefix deleted">-</span><span class="token line">                   _stored_row_ref[begin].block-&gt;get_by_position(_agg_columns_idx[i]).column_raw;
+</span><span class="token prefix deleted">-</span><span class="token line">           function-&gt;add_batch_range(_stored_row_ref[begin].row_pos,
+</span><span class="token prefix deleted">-</span><span class="token line">                                     _stored_row_ref[end - 1].row_pos, place,
+</span><span class="token prefix deleted">-</span><span class="token line">                                     const_cast&lt;const IColumn**&gt;(&amp;column_ptr), nullptr);
+</span><span class="token prefix deleted">-</span><span class="token line">       };
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">       for (; end &lt; _stored_row_ref.size(); end++) {
+</span><span class="token prefix deleted">-</span><span class="token line">           if (_stored_row_ref[end].block != _stored_row_ref[begin].block) {
+</span><span class="token prefix deleted">-</span><span class="token line">               add_batch();
+</span><span class="token prefix deleted">-</span><span class="token line">               begin = end;
+</span><span class="token prefix deleted">-</span><span class="token line">           }
+</span><span class="token prefix deleted">-</span><span class="token line">       }
+</span><span class="token prefix deleted">-</span><span class="token line">       add_batch();
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">       function-&gt;add_batch_single_place(_agg_data_num, place,
+</span><span class="token prefix inserted">+</span><span class="token line">                                        const_cast&lt;const IColumn**&gt;(&amp;column_ptr), nullptr);
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   }
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">   _stored_row_ref.clear();
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">   _agg_data_num = 0;
+</span></span>}
+
+} // namespace doris::vectorized</code>
                         </div>
                     </section>
                 </div>
             </section>
             <footer>
                 <span>These metrics include private contributions</span>
-                <span>Last updated 12 Dec 2021, 09:10:34 (timezone Asia/Shanghai) with lowlighter/metrics@3.16.0</span>
+                <span>Last updated 12 Dec 2021, 14:24:11 (timezone Asia/Shanghai) with lowlighter/metrics@3.16.0</span>
             </footer>
         </div>
         <div xmlns="http://www.w3.org/1999/xhtml" id="metrics-end"></div>
