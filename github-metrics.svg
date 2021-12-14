@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="480" height="1690" class="">
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="1943" class="">
     <defs>
         <style/>
     </defs>
@@ -1757,17 +1757,17 @@
             </div>
                         <div class="field">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M10.5 7.75a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zm1.43.75a4.002 4.002 0 01-7.86 0H.75a.75.75 0 110-1.5h3.32a4.001 4.001 0 017.86 0h3.32a.75.75 0 110 1.5h-3.32z"/></svg>
-              fix
+              support agg reader
             </div>
                         <div class="field">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
                                 <path fill-rule="evenodd" d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm6.5-.25A.75.75 0 017.25 7h1a.75.75 0 01.75.75v2.75h.25a.75.75 0 010 1.5h-2a.75.75 0 010-1.5h.25v-2h-.25a.75.75 0 01-.75-.75zM8 6a1 1 0 100-2 1 1 0 000 2z"/>
                             </svg>
-                            <span class="code">ba1b0792</span>
-                            <span class="code">be/src/vec/exprs/vin_predicate.cpp</span>
+                            <span class="code">c81e0b57</span>
+                            <span class="code">be/src/vec/columns/column_string.h</span>
                             <span class="code">
                                 <span class="snippet additions">++8</span>
-                                <span class="snippet deletions">--8</span>
+                                <span class="snippet deletions">--17</span>
                             </span>
                         </div>
                     </section>
@@ -1775,54 +1775,70 @@
                 <div class="row">
                     <section class="snippet">
                         <div class="body markdown">
-                            <code class="language-diff" xml:space="preserve"><span class="token coord">@@ -35,8 +35,8 @@</span>
-VInPredicate::VInPredicate(const TExprNode&amp; node)
-<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">         _null_in_set(false),
-</span><span class="token prefix unchanged"> </span><span class="token line">         _hybrid_set() {}
+                            <code class="language-diff" xml:space="preserve"><span class="token coord">@@ -139,7 +139,7 @@</span>
+class ColumnString final : public COWHelper&lt;IColumn, ColumnString&gt; {
+
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">           chars.resize(new_size);
+</span><span class="token prefix unchanged"> </span><span class="token line">           memcpy_small_allow_read_write_overflow15(chars.data() + old_size, &amp;src.chars[offset],
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">                                               size_to_append);
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">                                                    size_to_append);
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">           offsets.push_back(new_size);
+</span><span class="token prefix unchanged"> </span><span class="token line">       }
+</span><span class="token prefix unchanged"> </span><span class="token line">   }
+</span></span>@@ -199,21 +199,23 @@ class ColumnString final : public COWHelper&lt;IColumn, ColumnString&gt; {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   }
 </span></span>
-<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">doris::Status VInPredicate::prepare(doris::RuntimeState* state, const doris::RowDescriptor&amp; desc,
-</span><span class="token prefix deleted">-</span><span class="token line">                                   VExprContext* context) {
-</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">Status VInPredicate::prepare(RuntimeState* state, const RowDescriptor&amp; desc,
-</span><span class="token prefix inserted">+</span><span class="token line">                            VExprContext* context) {
-</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   RETURN_IF_ERROR(VExpr::prepare(state, desc, context));
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   int compare_at(size_t n, size_t m, const IColumn&amp; rhs_,
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">                 int /*nan_direction_hint*/) const override {
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">                  int /*nan_direction_hint*/) const override {
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       const ColumnString&amp; rhs = assert_cast&lt;const ColumnString&amp;&gt;(rhs_);
+</span><span class="token prefix unchanged"> </span><span class="token line">       return memcmp_small_allow_overflow15(chars.data() + offset_at(n), size_at(n) - 1,
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">                                         rhs.chars.data() + rhs.offset_at(m), rhs.size_at(m) - 1);
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">                                            rhs.chars.data() + rhs.offset_at(m),
+</span><span class="token prefix inserted">+</span><span class="token line">                                            rhs.size_at(m) - 1);
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   }
 </span></span>
-<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   if (_is_prepare) {
-</span></span>@@ -107,22 +107,22 @@ doris::Status VInPredicate::prepare(doris::RuntimeState* state, const doris::Row
-<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   return Status::OK();
-</span></span>}
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   /// Variant of compare_at for string comparison with respect of collation.
+</span><span class="token prefix unchanged"> </span><span class="token line">   int compare_at_with_collation(size_t n, size_t m, const IColumn&amp; rhs_,
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">                              const Collator&amp; collator) const;
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">                                 const Collator&amp; collator) const;
+</span></span>
+<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">   void get_permutation(bool reverse, size_t limit, int nan_direction_hint, Permutation &amp; res) const override;
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">   void get_permutation(bool reverse, size_t limit, int nan_direction_hint,
+</span><span class="token prefix inserted">+</span><span class="token line">                        Permutation&amp; res) const override;
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   /// Sorting with respect of collation.
+</span><span class="token prefix unchanged"> </span><span class="token line">   void get_permutation_with_collation(const Collator&amp; collator, bool reverse, size_t limit,
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">                                    Permutation&amp; res) const;
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">                                       Permutation&amp; res) const;
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   ColumnPtr replicate(const Offsets&amp; replicate_offsets) const override;
+</span></span>
+@@ -245,17 +247,6 @@ class ColumnString final : public COWHelper&lt;IColumn, ColumnString&gt; {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       chars.clear();
+</span><span class="token prefix unchanged"> </span><span class="token line">       offsets.clear();
+</span><span class="token prefix unchanged"> </span><span class="token line">   }
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">   void replace_column_data(const IColumn&amp; rhs, size_t row) override {
+</span><span class="token prefix deleted">-</span><span class="token line">       DCHECK(size() == 1);
+</span><span class="token prefix deleted">-</span><span class="token line">       const auto&amp; r = assert_cast&lt;const ColumnString&amp;&gt;(rhs);
+</span><span class="token prefix deleted">-</span><span class="token line">       auto data = r.get_data_at(row);
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">       offsets[0] = data.size + 1;
+</span><span class="token prefix deleted">-</span><span class="token line">       chars.clear();
+</span><span class="token prefix deleted">-</span><span class="token line">       chars.insert(data.data, data.data + data.size);
+</span><span class="token prefix deleted">-</span><span class="token line">       chars.emplace_back('\0');
+</span><span class="token prefix deleted">-</span><span class="token line">   }
+</span></span>};
 
-<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">doris::Status VInPredicate::open(doris::RuntimeState* state, VExprContext* context,
-</span><span class="token prefix deleted">-</span><span class="token line">                                FunctionContext::FunctionStateScope scope) {
-</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">Status VInPredicate::open(RuntimeState* state, VExprContext* context,
-</span><span class="token prefix inserted">+</span><span class="token line">                         FunctionContext::FunctionStateScope scope) {
-</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   RETURN_IF_ERROR(VExpr::open(state, context, scope));
-</span><span class="token prefix unchanged"> </span><span class="token line">   RETURN_IF_ERROR(VExpr::init_function_context(context, scope, _function));
-</span><span class="token prefix unchanged"> </span><span class="token line">   return Status::OK();
-</span></span>}
-
-<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">void VInPredicate::close(doris::RuntimeState* state, VExprContext* context, FunctionContext::FunctionStateScope scope) {
-</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">void VInPredicate::close(RuntimeState* state, VExprContext* context,
-</span><span class="token prefix inserted">+</span><span class="token line">                        FunctionContext::FunctionStateScope scope) {
-</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   VExpr::close_function_context(context, scope, _function);
-</span><span class="token prefix unchanged"> </span><span class="token line">   VExpr::close(state, context, scope);
-</span></span>}
-
-<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">doris::Status VInPredicate::execute(VExprContext* context, doris::vectorized::Block* block,
-</span><span class="token prefix deleted">-</span><span class="token line">                                   int* result_column_id) {
-</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">Status VInPredicate::execute(VExprContext* context, Block* block, int* result_column_id) {
-</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   // for each child call execute
-</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">   doris::vectorized::ColumnNumbers arguments(2);
-</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">   ColumnNumbers arguments(2);
-</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   int column_id = -1;
-</span><span class="token prefix unchanged"> </span><span class="token line">   _children[0]-&gt;execute(context, block, &amp;column_id);
-</span><span class="token prefix unchanged"> </span><span class="token line">   arguments[0] = column_id;</span></span></code>
+} // namespace doris::vectorized</code>
                         </div>
                     </section>
                 </div>
             </section>
             <footer>
                 <span>These metrics include private contributions</span>
-                <span>Last updated 14 Dec 2021, 20:33:00 (timezone Asia/Shanghai) with lowlighter/metrics@3.16.0</span>
+                <span>Last updated 15 Dec 2021, 02:24:39 (timezone Asia/Shanghai) with lowlighter/metrics@3.16.0</span>
             </footer>
         </div>
         <div xmlns="http://www.w3.org/1999/xhtml" id="metrics-end"></div>
