@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="480" height="1113" class="">
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="2085" class="">
     <defs>
         <style/>
     </defs>
@@ -1722,17 +1722,17 @@
             </div>
                         <div class="field">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M10.5 7.75a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zm1.43.75a4.002 4.002 0 01-7.86 0H.75a.75.75 0 110-1.5h3.32a4.001 4.001 0 017.86 0h3.32a.75.75 0 110 1.5h-3.32z"/></svg>
-              support more resize
+              clone optimize
             </div>
                         <div class="field">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
                                 <path fill-rule="evenodd" d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm6.5-.25A.75.75 0 017.25 7h1a.75.75 0 01.75.75v2.75h.25a.75.75 0 010 1.5h-2a.75.75 0 010-1.5h.25v-2h-.25a.75.75 0 01-.75-.75zM8 6a1 1 0 100-2 1 1 0 000 2z"/>
                             </svg>
-                            <span class="code">bb09cc38</span>
-                            <span class="code">be/src/vec/columns/column_complex.h</span>
+                            <span class="code">ecffcbcf</span>
+                            <span class="code">be/src/vec/olap/vcollect_iterator.h</span>
                             <span class="code">
-                                <span class="snippet additions">++2</span>
-                                <span class="snippet deletions">--0</span>
+                                <span class="snippet additions">++10</span>
+                                <span class="snippet deletions">--11</span>
                             </span>
                         </div>
                     </section>
@@ -1740,23 +1740,93 @@
                 <div class="row">
                     <section class="snippet">
                         <div class="body markdown">
-                            <code class="language-diff" xml:space="preserve"><span class="token coord">@@ -73,6 +73,8 @@</span>
-class ColumnComplexType final : public COWHelper&lt;IColumn, ColumnComplexType&lt;T&gt;&gt;
-
-<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   void reserve(size_t n) override { data.reserve(n); }
-</span></span>
-<span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">   void resize(size_t n) override { data.resize(n); }
+                            <code class="language-diff" xml:space="preserve"><span class="token coord">@@ -39,6 +39,8 @@</span>
+struct IteratorRowRef {
+class VCollectIterator {
+public:
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   // Hold reader point to get reader params
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">   ~VCollectIterator();
 </span><span class="token prefix inserted">+</span><span class="token line">
-</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   const char* get_family_name() const override { return TypeName&lt;T&gt;::get(); }
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   void init(Reader* reader);
 </span></span>
-<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   MutableColumnPtr clone_resized(size_t size) const override;</span></span></code>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   OLAPStatus add_child(RowsetReaderSharedPtr rs_reader);
+</span></span>@@ -73,21 +75,24 @@ class VCollectIterator {
+
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       virtual int64_t version() const = 0;
+</span></span>
+<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">       virtual OLAPStatus current_row(IteratorRowRef* ref) const = 0;
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">       const IteratorRowRef* current_row_ref() const { return &amp;_ref; }
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       virtual OLAPStatus next(IteratorRowRef* ref) = 0;
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       virtual OLAPStatus next(Block* block) = 0;
+</span></span>
+<span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">       void set_same(bool same) { _ref.is_same = same; }
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">       bool is_same() { return _ref.is_same; }
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       virtual ~LevelIterator() = default;
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       const TabletSchema&amp; tablet_schema() const { return _schema; };
+</span></span>
+<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">       void set_same(bool same) { _is_same = same; }
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       const TabletSchema&amp; _schema;
+</span></span>
+<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">       bool _is_same = false;
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">   protected:
+</span><span class="token prefix inserted">+</span><span class="token line">       IteratorRowRef _ref;
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   };
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   // Compare row cursors between multiple merge elements,
+</span></span>@@ -100,8 +105,6 @@ class VCollectIterator {
+
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   private:
+</span><span class="token prefix unchanged"> </span><span class="token line">       int _sequence;
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">       IteratorRowRef lhs_ref;
+</span><span class="token prefix deleted">-</span><span class="token line">       IteratorRowRef rhs_ref;
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   };
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   using MergeHeap = __gnu_pbds::priority_queue&lt;LevelIterator*, LevelIteratorComparator,
+</span></span>@@ -111,13 +114,12 @@ class VCollectIterator {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   class Level0Iterator : public LevelIterator {
+</span><span class="token prefix unchanged"> </span><span class="token line">   public:
+</span><span class="token prefix unchanged"> </span><span class="token line">       Level0Iterator(RowsetReaderSharedPtr rs_reader, Reader* reader);
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">       ~Level0Iterator() {}
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       OLAPStatus init() override;
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       int64_t version() const override;
+</span></span>
+<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">       OLAPStatus current_row(IteratorRowRef* ref) const override;
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       OLAPStatus next(IteratorRowRef* ref) override;
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       OLAPStatus next(Block* block) override;
+</span></span>@@ -127,7 +129,6 @@ class VCollectIterator {
+
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       RowsetReaderSharedPtr _rs_reader;
+</span><span class="token prefix unchanged"> </span><span class="token line">       Reader* _reader = nullptr;
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">       uint16_t _current_row = 0;
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       Block _block;
+</span><span class="token prefix unchanged"> </span><span class="token line">   };
+</span></span>
+@@ -141,8 +142,6 @@ class VCollectIterator {
+
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       int64_t version() const override;
+</span></span>
+<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">       OLAPStatus current_row(IteratorRowRef* ref) const override;
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       OLAPStatus next(IteratorRowRef* ref) override;
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       OLAPStatus next(Block* block) override;</span></span></code>
                         </div>
                     </section>
                 </div>
             </section>
             <footer>
                 <span>These metrics include private contributions</span>
-                <span>Last updated 25 Dec 2021, 14:24:58 (timezone Asia/Shanghai) with lowlighter/metrics@3.16.0</span>
+                <span>Last updated 25 Dec 2021, 20:32:39 (timezone Asia/Shanghai) with lowlighter/metrics@3.16.0</span>
             </footer>
         </div>
         <div xmlns="http://www.w3.org/1999/xhtml" id="metrics-end"></div>
