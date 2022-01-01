@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="480" height="1548" class="">
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="2241" class="">
     <defs>
         <style/>
     </defs>
@@ -1762,17 +1762,17 @@
             </div>
                         <div class="field">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M10.5 7.75a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zm1.43.75a4.002 4.002 0 01-7.86 0H.75a.75.75 0 110-1.5h3.32a4.001 4.001 0 017.86 0h3.32a.75.75 0 110 1.5h-3.32z"/></svg>
-              add multi row
+              remove link
             </div>
                         <div class="field">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
                                 <path fill-rule="evenodd" d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm6.5-.25A.75.75 0 017.25 7h1a.75.75 0 01.75.75v2.75h.25a.75.75 0 010 1.5h-2a.75.75 0 010-1.5h.25v-2h-.25a.75.75 0 01-.75-.75zM8 6a1 1 0 100-2 1 1 0 000 2z"/>
                             </svg>
-                            <span class="code">b79cdc1b</span>
-                            <span class="code">be/src/vec/columns/column_const.h</span>
+                            <span class="code">1970583e</span>
+                            <span class="code">be/src/vec/olap/block_reader.cpp</span>
                             <span class="code">
-                                <span class="snippet additions">++5</span>
-                                <span class="snippet deletions">--9</span>
+                                <span class="snippet additions">++21</span>
+                                <span class="snippet deletions">--32</span>
                             </span>
                         </div>
                     </section>
@@ -1780,48 +1780,97 @@
                 <div class="row">
                     <section class="snippet">
                         <div class="body markdown">
-                            <code class="language-diff" xml:space="preserve"><span class="token coord">@@ -87,9 +87,7 @@</span>
-class ColumnConst final : public COWHelper&lt;IColumn, ColumnConst&gt; {
+                            <code class="language-diff" xml:space="preserve"><span class="token coord">@@ -120,9 +120,26 @@</span>
+void BlockReader::_init_agg_state() {
+OLAPStatus BlockReader::init(const ReaderParams&amp; read_params) {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   Reader::init(read_params);
+</span><span class="token prefix unchanged"> </span><span class="token line">   _direct_mode = read_params.direct_mode;
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   _batch_size = read_params.runtime_state-&gt;batch_size();
+</span></span>
+<span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">   auto return_column_size =
+</span><span class="token prefix inserted">+</span><span class="token line">           read_params.origin_return_columns-&gt;size() - (_sequence_col_idx != -1 ? 1 : 0);
+</span><span class="token prefix inserted">+</span><span class="token line">   _return_columns_loc.resize(read_params.return_columns.size());
+</span><span class="token prefix inserted">+</span><span class="token line">   for (int i = 0; i &lt; return_column_size; ++i) {
+</span><span class="token prefix inserted">+</span><span class="token line">       auto cid = read_params.origin_return_columns-&gt;at(i);
+</span><span class="token prefix inserted">+</span><span class="token line">       for (int j = 0; j &lt; read_params.return_columns.size(); ++j) {
+</span><span class="token prefix inserted">+</span><span class="token line">           if (read_params.return_columns[j] == cid) {
+</span><span class="token prefix inserted">+</span><span class="token line">               if (j &lt; _tablet-&gt;num_key_columns() || _tablet-&gt;keys_type() != AGG_KEYS) {
+</span><span class="token prefix inserted">+</span><span class="token line">                   _normal_columns_idx.emplace_back(j);
+</span><span class="token prefix inserted">+</span><span class="token line">               } else {
+</span><span class="token prefix inserted">+</span><span class="token line">                   _agg_columns_idx.emplace_back(j);
+</span><span class="token prefix inserted">+</span><span class="token line">               }
+</span><span class="token prefix inserted">+</span><span class="token line">               _return_columns_loc[j] = i;
+</span><span class="token prefix inserted">+</span><span class="token line">               break;
+</span><span class="token prefix inserted">+</span><span class="token line">           }
+</span><span class="token prefix inserted">+</span><span class="token line">       }
+</span><span class="token prefix inserted">+</span><span class="token line">   }
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   std::vector&lt;RowsetReaderSharedPtr&gt; rs_readers;
+</span><span class="token prefix unchanged"> </span><span class="token line">   auto status = _init_collect_iter(read_params, &amp;rs_readers);
+</span><span class="token prefix unchanged"> </span><span class="token line">   if (status != OLAP_SUCCESS) {
+</span></span>@@ -167,39 +184,16 @@ OLAPStatus BlockReader::_direct_agg_key_next_block(Block* block, MemPool* mem_po
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   return OLAP_SUCCESS;
+</span></span>}
 
-<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   void insert_from(const IColumn&amp;, size_t) override { ++s; }
-</span></span>
-<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">   void clear() override {
-</span><span class="token prefix deleted">-</span><span class="token line">       s = 0;
+<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">void BlockReader::_get_block_link(const Block* input, const Block* output, bool is_agg) {
+</span><span class="token prefix deleted">-</span><span class="token line">   int normal_num = is_agg ? tablet()-&gt;num_key_columns() : input-&gt;columns();
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">   _return_columns_loc.resize(input-&gt;columns());
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">   for (int i = 0; i &lt; input-&gt;columns(); i++) {
+</span><span class="token prefix deleted">-</span><span class="token line">       for (int j = 0; j &lt; output-&gt;columns(); j++) {
+</span><span class="token prefix deleted">-</span><span class="token line">           if (input-&gt;get_by_position(i).name == output-&gt;get_by_position(j).name) {
+</span><span class="token prefix deleted">-</span><span class="token line">               if (i &lt; normal_num) {
+</span><span class="token prefix deleted">-</span><span class="token line">                   _normal_columns_idx.push_back(i);
+</span><span class="token prefix deleted">-</span><span class="token line">               } else {
+</span><span class="token prefix deleted">-</span><span class="token line">                   _agg_columns_idx.push_back(i);
+</span><span class="token prefix deleted">-</span><span class="token line">               }
+</span><span class="token prefix deleted">-</span><span class="token line">               _return_columns_loc[i] = j;
+</span><span class="token prefix deleted">-</span><span class="token line">           }
+</span><span class="token prefix deleted">-</span><span class="token line">       }
 </span><span class="token prefix deleted">-</span><span class="token line">   }
-</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">   void clear() override { s = 0; }
-</span></span>
-<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   void insert_default() override { ++s; }
-</span></span>
-@@ -117,9 +115,7 @@ class ColumnConst final : public COWHelper&lt;IColumn, ColumnConst&gt; {
-<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   void get_permutation(bool reverse, size_t limit, int nan_direction_hint,
-</span><span class="token prefix unchanged"> </span><span class="token line">                        Permutation&amp; res) const override;
-</span></span>
-<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">   size_t byte_size() const override {
-</span><span class="token prefix deleted">-</span><span class="token line">       return s &gt; 0 ? data-&gt;byte_size() + sizeof(s) : 0;
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">   if (is_agg) {
+</span><span class="token prefix deleted">-</span><span class="token line">       _init_agg_state();
 </span><span class="token prefix deleted">-</span><span class="token line">   }
-</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">   size_t byte_size() const override { return s &gt; 0 ? data-&gt;byte_size() + sizeof(s) : 0; }
-</span></span>
-<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   size_t allocated_bytes() const override { return data-&gt;allocated_bytes() + sizeof(s); }
-</span></span>
-@@ -161,9 +157,9 @@ class ColumnConst final : public COWHelper&lt;IColumn, ColumnConst&gt; {
-<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       return get_field().safe_get&lt;NearestFieldType&lt;T&gt;&gt;();
+</span><span class="token prefix deleted">-</span><span class="token line">}
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span></span>OLAPStatus BlockReader::_agg_key_next_block(Block* block, MemPool* mem_pool, ObjectPool* agg_pool,
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">                                           bool* eof) {
+</span><span class="token prefix unchanged"> </span><span class="token line">   if (UNLIKELY(_eof)) {
+</span><span class="token prefix unchanged"> </span><span class="token line">       *eof = true;
+</span><span class="token prefix unchanged"> </span><span class="token line">       return OLAP_SUCCESS;
 </span><span class="token prefix unchanged"> </span><span class="token line">   }
 </span></span>
-<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">   void replace_column_data(const IColumn&amp; rhs, size_t row) override {
-</span><span class="token prefix deleted">-</span><span class="token line">       DCHECK(size() == 1);
-</span><span class="token prefix deleted">-</span><span class="token line">       data-&gt;replace_column_data(rhs, row);
-</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">   void replace_column_data(const IColumn&amp; rhs, size_t row, size_t self_row = 0) override {
-</span><span class="token prefix inserted">+</span><span class="token line">       DCHECK(size() &gt; self_row);
-</span><span class="token prefix inserted">+</span><span class="token line">       data-&gt;replace_column_data(rhs, row, self_row);
+<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">   if (!_linked_inited) {
+</span><span class="token prefix deleted">-</span><span class="token line">       _linked_inited = true;
+</span><span class="token prefix deleted">-</span><span class="token line">       _get_block_link(_next_row.block, block, true);
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">   if (!_agg_inited) {
+</span><span class="token prefix inserted">+</span><span class="token line">       _init_agg_state();
+</span><span class="token prefix inserted">+</span><span class="token line">       _agg_inited = true;
 </span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   }
-</span></span>};</code>
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   auto target_block_row = 0;
+</span></span>@@ -248,11 +242,6 @@ OLAPStatus BlockReader::_unique_key_next_block(Block* block, MemPool* mem_pool,
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">       return OLAP_SUCCESS;
+</span><span class="token prefix unchanged"> </span><span class="token line">   }
+</span></span>
+<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">   if (!_linked_inited) {
+</span><span class="token prefix deleted">-</span><span class="token line">       _linked_inited = true;
+</span><span class="token prefix deleted">-</span><span class="token line">       _get_block_link(_next_row.block, block, false);
+</span><span class="token prefix deleted">-</span><span class="token line">   }
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   auto target_block_row = 0;
+</span><span class="token prefix unchanged"> </span><span class="token line">   auto target_columns = block-&gt;mutate_columns();
+</span></span></code>
                         </div>
                     </section>
                 </div>
             </section>
             <footer>
                 <span>These metrics include private contributions</span>
-                <span>Last updated 1 Jan 2022, 14:25:24 (timezone Asia/Shanghai) with lowlighter/metrics@3.16.0</span>
+                <span>Last updated 1 Jan 2022, 20:33:11 (timezone Asia/Shanghai) with lowlighter/metrics@3.16.0</span>
             </footer>
         </div>
         <div xmlns="http://www.w3.org/1999/xhtml" id="metrics-end"></div>
