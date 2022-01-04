@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="480" height="1974" class="">
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="2694" class="">
     <defs>
         <style/>
     </defs>
@@ -1763,21 +1763,23 @@
                     <section class="largeable-column-fields">
                         <div class="field">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"/></svg>
-              From <span class="blue space">Tango-Club/DailyTaichi</span>
+              From <span class="blue space">BiteTheDDDDt/doris-vectorized</span>
             </div>
                         <div class="field">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M10.5 7.75a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zm1.43.75a4.002 4.002 0 01-7.86 0H.75a.75.75 0 110-1.5h3.32a4.001 4.001 0 017.86 0h3.32a.75.75 0 110 1.5h-3.32z"/></svg>
-              add moved star
+              Revert "[Vec Load] Support load"
+
+This reverts commit 308bfe5eb0c72794b3173725175c9a60080fa749.
             </div>
                         <div class="field">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
                                 <path fill-rule="evenodd" d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm6.5-.25A.75.75 0 017.25 7h1a.75.75 0 01.75.75v2.75h.25a.75.75 0 010 1.5h-2a.75.75 0 010-1.5h.25v-2h-.25a.75.75 0 01-.75-.75zM8 6a1 1 0 100-2 1 1 0 000 2z"/>
                             </svg>
-                            <span class="code">6f9705fa</span>
-                            <span class="code">moved_star.py</span>
+                            <span class="code">5031273e</span>
+                            <span class="code">be/src/exec/tablet_info.h</span>
                             <span class="code">
-                                <span class="snippet additions">++72</span>
-                                <span class="snippet deletions">--0</span>
+                                <span class="snippet additions">++0</span>
+                                <span class="snippet deletions">--100</span>
                             </span>
                         </div>
                     </section>
@@ -1785,86 +1787,127 @@
                 <div class="row">
                     <section class="snippet">
                         <div class="body markdown">
-                            <code class="language-diff" xml:space="preserve"><span class="token coord">@@ -0,0 +1,72 @@</span>
-<span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">import taichi as ti
-</span><span class="token prefix inserted">+</span><span class="token line">import math
-</span><span class="token prefix inserted">+</span><span class="token line">
-</span><span class="token prefix inserted">+</span><span class="token line">ti.init(arch=ti.gpu)
-</span><span class="token prefix inserted">+</span><span class="token line">
-</span><span class="token prefix inserted">+</span><span class="token line">eps = 0.00001
-</span><span class="token prefix inserted">+</span><span class="token line">board_size = 1000
-</span><span class="token prefix inserted">+</span><span class="token line">
-</span><span class="token prefix inserted">+</span><span class="token line">self_size = 100
-</span><span class="token prefix inserted">+</span><span class="token line">
-</span><span class="token prefix inserted">+</span><span class="token line">self_x = board_size/2
-</span><span class="token prefix inserted">+</span><span class="token line">self_y = board_size/2
-</span><span class="token prefix inserted">+</span><span class="token line">
-</span><span class="token prefix inserted">+</span><span class="token line">pixels = ti.field(dtype=float, shape=(board_size, board_size))
-</span><span class="token prefix inserted">+</span><span class="token line">
-</span><span class="token prefix inserted">+</span><span class="token line">
-</span><span class="token prefix inserted">+</span><span class="token line">@ti.func
-</span><span class="token prefix inserted">+</span><span class="token line">def check_inner(x, y, p):
-</span><span class="token prefix inserted">+</span><span class="token line">q = 180*p
-</span><span class="token prefix inserted">+</span><span class="token line">zeta = 2*ti.atan2(ti.cast(y, ti.f32), ti.cast(x, ti.f32))
-</span><span class="token prefix inserted">+</span><span class="token line">
-</span><span class="token prefix inserted">+</span><span class="token line">while zeta &gt; (90+q)*math.pi/180:
-</span><span class="token prefix inserted">+</span><span class="token line">    zeta -= q*math.pi/90
-</span><span class="token prefix inserted">+</span><span class="token line">while zeta &lt; (90-q)*math.pi/180:
-</span><span class="token prefix inserted">+</span><span class="token line">    zeta += q*math.pi/90
-</span><span class="token prefix inserted">+</span><span class="token line">
-</span><span class="token prefix inserted">+</span><span class="token line">zeta = abs(math.pi/2-zeta)
-</span><span class="token prefix inserted">+</span><span class="token line">
-</span><span class="token prefix inserted">+</span><span class="token line">da = 2*ti.sqrt(x*x+y*y)/self_size
-</span><span class="token prefix inserted">+</span><span class="token line">db = ti.sin(math.pi*q/360)/ti.sin(math.pi*q/360+zeta)
-</span><span class="token prefix inserted">+</span><span class="token line">
-</span><span class="token prefix inserted">+</span><span class="token line">return da/db
-</span><span class="token prefix inserted">+</span><span class="token line">
-</span><span class="token prefix inserted">+</span><span class="token line">
-</span><span class="token prefix inserted">+</span><span class="token line">@ti.func
-</span><span class="token prefix inserted">+</span><span class="token line">def check(c_x, c_y, x, y, p):
-</span><span class="token prefix inserted">+</span><span class="token line">x -= c_x
-</span><span class="token prefix inserted">+</span><span class="token line">y -= c_y
-</span><span class="token prefix inserted">+</span><span class="token line">
-</span><span class="token prefix inserted">+</span><span class="token line">return 1.0 if (abs(x) &gt; self_size or abs(y) &gt; self_size) else check_inner(x, y, p)
-</span><span class="token prefix inserted">+</span><span class="token line">
-</span><span class="token prefix inserted">+</span><span class="token line">
-</span><span class="token prefix inserted">+</span><span class="token line">@ti.kernel
-</span><span class="token prefix inserted">+</span><span class="token line">def paint(c_x: float, c_y: float, t: float):
-</span><span class="token prefix inserted">+</span><span class="token line">speed = 0.05
-</span><span class="token prefix inserted">+</span><span class="token line">p = 2 * abs(0.5 - (t*speed - int(t*speed)))
-</span><span class="token prefix inserted">+</span><span class="token line">p = max(p, eps)
-</span><span class="token prefix inserted">+</span><span class="token line">p = min(p, 0.5)
-</span><span class="token prefix inserted">+</span><span class="token line">for i, j in pixels:  # Parallelized over all pixels
-</span><span class="token prefix inserted">+</span><span class="token line">    pixels[i, j] = check(c_x, c_y, i, j, p)
-</span><span class="token prefix inserted">+</span><span class="token line">
-</span><span class="token prefix inserted">+</span><span class="token line">
-</span><span class="token prefix inserted">+</span><span class="token line">def update_self(self_x, self_y):
-</span><span class="token prefix inserted">+</span><span class="token line">for e in gui.get_events():
-</span><span class="token prefix inserted">+</span><span class="token line">    if e.key ==ti.GUI.LEFT:
-</span><span class="token prefix inserted">+</span><span class="token line">        self_x -= 3
-</span><span class="token prefix inserted">+</span><span class="token line">    elif e.key ==ti.GUI.RIGHT:
-</span><span class="token prefix inserted">+</span><span class="token line">        self_x += 3
-</span><span class="token prefix inserted">+</span><span class="token line">    elif e.key ==ti.GUI.UP:
-</span><span class="token prefix inserted">+</span><span class="token line">        self_y += 3
-</span><span class="token prefix inserted">+</span><span class="token line">    elif e.key ==ti.GUI.DOWN:
-</span><span class="token prefix inserted">+</span><span class="token line">        self_y -= 3
-</span><span class="token prefix inserted">+</span><span class="token line">return self_x, self_y
-</span><span class="token prefix inserted">+</span><span class="token line">
-</span><span class="token prefix inserted">+</span><span class="token line">
-</span><span class="token prefix inserted">+</span><span class="token line">gui = ti.GUI("Moved Star", res=(board_size, board_size))
-</span><span class="token prefix inserted">+</span><span class="token line">
-</span><span class="token prefix inserted">+</span><span class="token line">for i in range(1000000000):
-</span><span class="token prefix inserted">+</span><span class="token line">self_x, self_y = update_self(self_x, self_y)
-</span><span class="token prefix inserted">+</span><span class="token line">paint(self_x, self_y, i * 0.03)
-</span><span class="token prefix inserted">+</span><span class="token line">gui.set_image(pixels)
-</span><span class="token prefix inserted">+</span><span class="token line">gui.show()</span></span></code>
+                            <code class="language-diff" xml:space="preserve"><span class="token coord">@@ -31,8 +31,6 @@</span>
+#include "runtime/raw_value.h"
+#include "runtime/tuple.h"
+
+<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">#include "vec/core/block.h"
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span></span>namespace doris {
+
+class MemPool;
+@@ -207,104 +205,6 @@ class OlapTablePartitionParam {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">           _partitions_map;
+</span></span>};
+
+<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">using BlockRow = std::pair&lt;vectorized::Block*, int32_t&gt;;
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">struct VOlapTablePartition {
+</span><span class="token prefix deleted">-</span><span class="token line">   int64_t id = 0;
+</span><span class="token prefix deleted">-</span><span class="token line">   BlockRow start_key;
+</span><span class="token prefix deleted">-</span><span class="token line">   BlockRow end_key;
+</span><span class="token prefix deleted">-</span><span class="token line">   std::vector&lt;BlockRow&gt; in_keys;
+</span><span class="token prefix deleted">-</span><span class="token line">   int64_t num_buckets = 0;
+</span><span class="token prefix deleted">-</span><span class="token line">   std::vector&lt;OlapTableIndexTablets&gt; indexes;
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">   VOlapTablePartition(vectorized::Block* partition_block):
+</span><span class="token prefix deleted">-</span><span class="token line">       start_key{partition_block, -1}, end_key{partition_block, -1} {};
+</span><span class="token prefix deleted">-</span><span class="token line">};
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">class VOlapTablePartKeyComparator {
+</span><span class="token prefix deleted">-</span><span class="token line">public:
+</span><span class="token prefix deleted">-</span><span class="token line">   VOlapTablePartKeyComparator(const std::vector&lt;uint16_t&gt;&amp; slot_locs)
+</span><span class="token prefix deleted">-</span><span class="token line">           : _slot_locs(slot_locs) {}
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">   // return true if lhs &lt; rhs
+</span><span class="token prefix deleted">-</span><span class="token line">   // 'row' is -1 mean
+</span><span class="token prefix deleted">-</span><span class="token line">   bool operator()(const BlockRow* lhs, const BlockRow* rhs) const {
+</span><span class="token prefix deleted">-</span><span class="token line">       if (lhs-&gt;second == -1) {
+</span><span class="token prefix deleted">-</span><span class="token line">           return false;
+</span><span class="token prefix deleted">-</span><span class="token line">       } else if (rhs-&gt;second == -1) {
+</span><span class="token prefix deleted">-</span><span class="token line">           return true;
+</span><span class="token prefix deleted">-</span><span class="token line">       }
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">       for (auto slot_loc : _slot_locs) {
+</span><span class="token prefix deleted">-</span><span class="token line">           auto res = lhs-&gt;first-&gt;get_by_position(slot_loc).column-&gt;compare_at(
+</span><span class="token prefix deleted">-</span><span class="token line">                   lhs-&gt;second, rhs-&gt;second, *rhs-&gt;first-&gt;get_by_position(slot_loc).column, -1);
+</span><span class="token prefix deleted">-</span><span class="token line">           if (res != 0) {
+</span><span class="token prefix deleted">-</span><span class="token line">               return res &lt; 0;
+</span><span class="token prefix deleted">-</span><span class="token line">           }
+</span><span class="token prefix deleted">-</span><span class="token line">       }
+</span><span class="token prefix deleted">-</span><span class="token line">       // equal, return false
+</span><span class="token prefix deleted">-</span><span class="token line">       return false;
+</span><span class="token prefix deleted">-</span><span class="token line">   }
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">private:
+</span><span class="token prefix deleted">-</span><span class="token line">   const std::vector&lt;uint16_t&gt;&amp; _slot_locs;
+</span><span class="token prefix deleted">-</span><span class="token line">};
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">// store an olap table's tablet information
+</span><span class="token prefix deleted">-</span><span class="token line">class VOlapTablePartitionParam {
+</span><span class="token prefix deleted">-</span><span class="token line">public:
+</span><span class="token prefix deleted">-</span><span class="token line">   VOlapTablePartitionParam(std::shared_ptr&lt;OlapTableSchemaParam&gt;&amp; schema,
+</span><span class="token prefix deleted">-</span><span class="token line">                           const TOlapTablePartitionParam&amp; param);
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">   ~VOlapTablePartitionParam();
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">   Status init();
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">   int64_t db_id() const { return _t_param.db_id; }
+</span><span class="token prefix deleted">-</span><span class="token line">   int64_t table_id() const { return _t_param.table_id; }
+</span><span class="token prefix deleted">-</span><span class="token line">   int64_t version() const { return _t_param.version; }
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">   // return true if we found this tuple in partition
+</span><span class="token prefix deleted">-</span><span class="token line">   bool find_tablet(BlockRow* block_row, const VOlapTablePartition** partitions,
+</span><span class="token prefix deleted">-</span><span class="token line">                    uint32_t* dist_hash) const;
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">   const std::vector&lt;VOlapTablePartition*&gt;&amp; get_partitions() const { return _partitions; }
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">private:
+</span><span class="token prefix deleted">-</span><span class="token line">   Status _create_partition_keys(const std::vector&lt;TExprNode&gt;&amp; t_exprs, BlockRow* part_key);
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">   Status _create_partition_key(const TExprNode&amp; t_expr, vectorized::Block* block, uint16_t pos);
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">   uint32_t _compute_dist_hash(BlockRow* key) const;
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">   // check if this partition contain this key
+</span><span class="token prefix deleted">-</span><span class="token line">   bool _part_contains(VOlapTablePartition* part, BlockRow* key) const {
+</span><span class="token prefix deleted">-</span><span class="token line">       // start_key.second == -1 means only single partition
+</span><span class="token prefix deleted">-</span><span class="token line">       VOlapTablePartKeyComparator comparator(_partition_slot_locs);
+</span><span class="token prefix deleted">-</span><span class="token line">       return part-&gt;start_key.second == -1 || !comparator(key, &amp;part-&gt;start_key);
+</span><span class="token prefix deleted">-</span><span class="token line">   }
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">private:
+</span><span class="token prefix deleted">-</span><span class="token line">   // this partition only valid in this schema
+</span><span class="token prefix deleted">-</span><span class="token line">   std::shared_ptr&lt;OlapTableSchemaParam&gt; _schema;
+</span><span class="token prefix deleted">-</span><span class="token line">   TOlapTablePartitionParam _t_param;
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">   const std::vector&lt;SlotDescriptor*&gt;&amp; _slots;
+</span><span class="token prefix deleted">-</span><span class="token line">   std::vector&lt;uint16_t&gt; _partition_slot_locs;
+</span><span class="token prefix deleted">-</span><span class="token line">   std::vector&lt;uint16_t&gt; _distributed_slot_locs;
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">   ObjectPool _obj_pool;
+</span><span class="token prefix deleted">-</span><span class="token line">   vectorized::Block _partition_block;
+</span><span class="token prefix deleted">-</span><span class="token line">   std::shared_ptr&lt;MemTracker&gt; _mem_tracker;
+</span><span class="token prefix deleted">-</span><span class="token line">   std::vector&lt;VOlapTablePartition*&gt; _partitions;
+</span><span class="token prefix deleted">-</span><span class="token line">   std::unique_ptr&lt;std::map&lt;BlockRow*, VOlapTablePartition*, VOlapTablePartKeyComparator&gt;&gt;
+</span><span class="token prefix deleted">-</span><span class="token line">           _partitions_map;
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">   bool _is_in_partition = false;
+</span><span class="token prefix deleted">-</span><span class="token line">   uint32_t _mem_usage = 0;
+</span><span class="token prefix deleted">-</span><span class="token line">};
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span></span>using TabletLocation = TTabletLocation;
+// struct TTabletLocation {
+//     1: required i64 tablet_id</code>
                         </div>
                     </section>
                 </div>
             </section>
             <footer>
                 <span>These metrics include private contributions</span>
-                <span>Last updated 4 Jan 2022, 20:34:20 (timezone Asia/Shanghai) with lowlighter/metrics@3.16.0</span>
+                <span>Last updated 5 Jan 2022, 02:25:31 (timezone Asia/Shanghai) with lowlighter/metrics@3.16.0</span>
             </footer>
         </div>
         <div xmlns="http://www.w3.org/1999/xhtml" id="metrics-end"></div>
