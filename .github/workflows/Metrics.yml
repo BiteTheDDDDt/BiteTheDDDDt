@@ -24,6 +24,5 @@ jobs:
           plugin_notable: yes
           plugin_notable_repositories: yes
           plugin_notable_indepth: yes
-          
-          plugin_code: yes
-          plugin_code_lines: 120
+          plugin_notable_filter: stars:>0 
+
