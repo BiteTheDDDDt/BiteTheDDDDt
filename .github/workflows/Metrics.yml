@@ -19,11 +19,10 @@ jobs:
           plugin_wakatime: yes
           plugin_wakatime_token: ${{ secrets.WAKETIME }}
           plugin_wakatime_sections: time, projects-graphs, languages-graphs, editors-graphs, os-graphs
-          plugin_wakatime_limit: 5
-          plugin_wakatime_days: 365
     
           plugin_notable: yes
           plugin_notable_repositories: yes
           plugin_notable_indepth: yes
           plugin_notable_filter: stars:>1 
+          plugin_notable_types: pull_request, commit
 
