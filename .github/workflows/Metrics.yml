@@ -21,6 +21,8 @@ jobs:
           plugin_wakatime_sections: time, projects-graphs, languages-graphs, editors-graphs, os-graphs
     
           plugin_notable: yes
+          plugin_notable_repositories: yes
+          plugin_notable_indepth: yes
           plugin_notable_from: all
           plugin_notable_filter: stars:>1 
           plugin_notable_types: pull_request, commit
