@@ -4,4 +4,3 @@
 [![Badge](https://cp-logo.vercel.app/atcoder/BiteTheDust?logo=true)](https://atcoder.jp/users/BiteTheDust)
 [![Badge](https://cp-logo.vercel.app/leetcode-cn/bitethed4t?logo=true)](https://leetcode.cn/u/bitethed4t/)
 [![Badge](https://cp-logo.vercel.app/codeforces/bitetheDDDDt)](https://codeforces.com/profile/bitetheDDDDt)
-Apache Doris Community Badge
